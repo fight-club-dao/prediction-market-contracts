@@ -10,7 +10,7 @@ import "./libraries/SharedStructs.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IERC20BettingToken.sol";
-import "hardhat/console.sol";
+
 contract PMHelper {
     using SafeMath for uint256;
 

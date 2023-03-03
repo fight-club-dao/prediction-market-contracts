@@ -31,8 +31,12 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
    *
    * @param oracle - The FunctionsOracle contract
    */
-  constructor(address oracle, address  _pmManager) FunctionsClient(oracle) ConfirmedOwner(msg.sender) {
-      pmManager = _pmManager;
+  constructor(address oracle) FunctionsClient(oracle) ConfirmedOwner(msg.sender) {
+
+  }
+
+  function setPMManager(address _pmManager) external { //todo: add require for that only owner
+    pmManager = _pmManager;
   }
 
 

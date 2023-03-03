@@ -1,5 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@nomiclabs/hardhat-etherscan";
 // @ts-ignore
 const PK = ""
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
@@ -89,7 +90,7 @@ const config: HardhatUserConfig = {
       url: 'https://eth-goerli.g.alchemy.com/v2/SCDgqVqpOzP_2_2Oj-C8jhug9Gw8FGnn',
       accounts: [process.env.PK || PK],
       chainId: 5,
-      gasPrice: 5000000000,
+      gasPrice: 7000000000,
       // timeout: 50000,
 
     },
@@ -97,7 +98,7 @@ const config: HardhatUserConfig = {
       url: 'https://polygon-mumbai.g.alchemy.com/v2/ZhTv-qMlQgowh84uTZJazc6iVSEeyKmK',
       accounts: [process.env.PK || PK],
       chainId: 80001,
-      gasPrice: 20000000000, // 44 GWEI gas price for deployment.
+      gasPrice: 110000000000, // 44 GWEI gas price for deployment.
       timeout: 10000000
     },
     sepolia: {
@@ -117,8 +118,12 @@ const config: HardhatUserConfig = {
 
     },
 
+  },
+  etherscan: {
+    // Your API key for Etherscan
+    // Obtain one at https://etherscan.io/
+    apiKey: process.env.ETHERSCAN_API_KEY
   }
-
 };
 
 

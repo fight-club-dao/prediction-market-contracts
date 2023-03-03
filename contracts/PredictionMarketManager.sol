@@ -17,10 +17,6 @@ import "./interfaces/IUSDT.sol";
 import "./libraries/SharedStructs.sol";
 import "./BettingToken.sol";
 
-import "hardhat/console.sol";
-
-
-
 interface IUniFactory {
     function getPair(address tokenA, address tokenB) external view returns (address);
 }
@@ -67,51 +63,7 @@ contract PredictionMarketManager is Ownable {
         feePercent = _percent;
     }
 
-    function newMatch(
-        string memory token1_name,
-        string memory token1_symbol,
-        string memory token2_name,
-        string memory token2_symbol,
-        address stable_token,
-        uint256 initial_stable_amount
-    ) external returns (uint256){
-        BettingToken token1 = new BettingToken(token1_name, token1_symbol,address(this), address(uniswapV2Router),stable_token);
-        BettingToken token2 = new BettingToken(token2_name, token2_symbol,address(this), address(uniswapV2Router),stable_token);
-        //Take loan here
-        require(IERC20(stable_token).balanceOf(address(this)) >= initial_stable_amount.mul(2), "not enough funds. take a loan");
-        //Add liquidity here
-        IERC20(address(token1)).approve(address(uniswapV2Router),token1.balanceOf(address(this)));
-        IERC20(address(token2)).approve(address(uniswapV2Router),token2.balanceOf(address(this)));
-        IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
-
-        uint256 deadline = block.timestamp;
-
-        uniswapV2Router.addLiquidity(
-            address(token1),
-            stable_token,
-            token1.balanceOf(address(this)),
-            initial_stable_amount,
-            token1.balanceOf(address(this)),
-            initial_stable_amount,
-            address(this),
-            deadline
-        );
-        console.log("before adding1");
-        uniswapV2Router.addLiquidity(
-            address(token2),
-            stable_token,
-            token2.balanceOf(address(this)),
-            initial_stable_amount,
-            token2.balanceOf(address(this)),
-            initial_stable_amount,
-            address(this),
-            deadline
-        );
-        address pair1 = uniswapFactory.getPair(address(token1), address(stable_token));
-        address pair2 = uniswapFactory.getPair(address(token2), address(stable_token));
-        IERC20BettingToken(address(token1)).setPoolAddress(pair1);
-        IERC20BettingToken(address(token2)).setPoolAddress(pair2);
-        //create Lock data
+    function _newMatch(address token1, address pair1, address token2, address pair2, uint256 initial_stable_amount) internal returns (uint256){
         SharedStructs.Match memory matchData;
 
         matchData.player1 = createPlayerStuct(pair1, address(token1),initial_stable_amount);
@@ -123,6 +75,82 @@ contract PredictionMarketManager is Ownable {
         matchCounter = matchCounter + 1;
 
         return (matchCounter - 1);
+    }
+    function _deployTokenAndAddLiquidity(string memory token_name, string memory token_symbol,address stable_token,
+        uint256 initial_stable_amount) internal returns (BettingToken, address){
+        uint256 deadline = block.timestamp;
+        //deploy
+        BettingToken token = new BettingToken(token_name, token_symbol,address(this), address(uniswapV2Router),stable_token);
+        //approve and provide liquidity
+        IERC20(address(token)).approve(address(uniswapV2Router),token.balanceOf(address(this)));
+
+        uniswapV2Router.addLiquidity(
+            address(token),
+            stable_token,
+            token.balanceOf(address(this)),
+            initial_stable_amount,
+            token.balanceOf(address(this)),
+            initial_stable_amount,
+            address(this),
+            deadline
+        );
+
+        address pair = uniswapFactory.getPair(address(token), address(stable_token));
+        IERC20BettingToken(address(token)).setPoolAddress(pair);
+        return(token, pair);
+
+    }
+    function newMatch(
+        string memory token1_name,
+        string memory token1_symbol,
+        string memory token2_name,
+        string memory token2_symbol,
+        address stable_token,
+        uint256 initial_stable_amount
+    ) external returns (uint256){ //todo add modifier
+        //Take loan here
+        require(IERC20(stable_token).balanceOf(address(this)) >= initial_stable_amount.mul(2), "not enough funds. take a loan");
+
+        IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
+
+        (BettingToken token1 ,address pair1)= _deployTokenAndAddLiquidity(token1_name, token1_symbol, stable_token, initial_stable_amount);
+        (BettingToken token2 ,address pair2)= _deployTokenAndAddLiquidity(token2_name, token2_symbol, stable_token, initial_stable_amount);
+
+        return _newMatch(address(token1), pair1, address(token2), pair2, initial_stable_amount);
+    }
+
+    function newMatchOneNewToken(
+        BettingToken token1,
+        address pair1,
+        string memory token2_name,
+        string memory token2_symbol,
+        address stable_token,
+        uint256 initial_stable_amount
+    ) external returns (uint256){
+        //Take loan here
+        require(IERC20(stable_token).balanceOf(address(this)) >= initial_stable_amount.mul(2), "not enough funds. take a loan");
+
+        IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
+
+        (BettingToken token2 ,address pair2)= _deployTokenAndAddLiquidity(token2_name, token2_symbol, stable_token, initial_stable_amount);
+
+        return _newMatch(address(token1), pair1, address(token2), pair2, initial_stable_amount);
+    }
+//
+    function newMatchNoNewTokens(
+        BettingToken token1,
+        address pair1,
+        BettingToken token2,
+        address pair2,
+        address stable_token,
+        uint256 initial_stable_amount
+    ) external returns (uint256){
+        //Take loan here
+        require(IERC20(stable_token).balanceOf(address(this)) >= initial_stable_amount.mul(2), "not enough funds. take a loan");
+
+        IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
+
+        return _newMatch(address(token1), pair1, address(token2), pair2, initial_stable_amount);
     }
 
     function createPlayerStuct(address pair, address token, uint256 initial_stable_amount) internal returns(SharedStructs.Player memory){
@@ -307,26 +335,39 @@ contract PredictionMarketManager is Ownable {
     function matchEnded(uint256 _betId) external onlyOwner {
         uint256 result = functionsConsumer.getMatchResults(_betId);
         require(result == 1 || result == 2,"result value can only be 1 or 2");
-        SharedStructs.Match storage matchData = matches[_betId];
+        startMatchEndedProccess(_betId, result, true);
+
+    }
+    /**
+     * @notice announce result
+   * @param _betId the id of the lock bet
+   * @param result the match results
+   */
+    function announceResult(uint256 _betId, uint256 result,bool removeInitial) external onlyOwner {
+        startMatchEndedProccess(_betId, result, removeInitial);
+    }
+    function startMatchEndedProccess(uint256 _betId, uint256 result,bool removeInitial) internal {
+        SharedStructs.Match storage lock = matches[_betId];
+
         _takeSnapshot(_betId);
 
-        matchData.matchResult = result;
-        matches[_betId] = matchData;
+        lock.matchResult = result;
+        matches[_betId] = lock;
 
         address winningToken;
         address losingLPtoken;
         address losingToken;
         uint256 initial;
-        if(matchData.matchResult == 1){
-            winningToken = matchData.player1.token;
-            losingLPtoken = matchData.player2.lpToken;
-            losingToken = matchData.player2.token;
-            initial = matchData.player2.initialStableAmount;
-        }else if(matchData.matchResult == 2){
-            winningToken = matchData.player2.token;
-            losingLPtoken = matchData.player1.lpToken;
-            losingToken = matchData.player1.token;
-            initial = matchData.player1.initialStableAmount;
+        if(lock.matchResult == 1){
+            winningToken = lock.player1.token;
+            losingLPtoken = lock.player2.lpToken;
+            losingToken = lock.player2.token;
+            initial = lock.player2.initialStableAmount;
+        }else if(lock.matchResult == 2){
+            winningToken = lock.player2.token;
+            losingLPtoken = lock.player1.lpToken;
+            losingToken = lock.player1.token;
+            initial = lock.player1.initialStableAmount;
         }
 
         IERC20BettingToken(winningToken).unpause();
@@ -340,7 +381,9 @@ contract PredictionMarketManager is Ownable {
 
         uint256 totalInPool = IERC20BettingToken(stableToken).balanceOf(losingLPtoken);
         uint256 losingLPtokenAmount = IERC20BettingToken(losingLPtoken).balanceOf(address(this));
+
         uint256 initialAmountToRemove = initial.mul(100000).div(totalInPool).mul(losingLPtokenAmount).div(100000);
+
 
         uint256 feeToAmountToClaim = 0;
 
@@ -351,109 +394,34 @@ contract PredictionMarketManager is Ownable {
             }
         }
 
+
         uint256 amountToRemove = initialAmountToRemove.add(feeToAmountToClaim);
+
         if(amountToRemove > losingLPtokenAmount){
             amountToRemove = losingLPtokenAmount;
         }
+        if(removeInitial){
+            IERC20BettingToken(losingLPtoken).approve(address(uniswapV2Router), amountToRemove);
 
-        IERC20BettingToken(losingLPtoken).approve(address(uniswapV2Router), amountToRemove);
+            IUniswapV2Router01(uniswapV2Router).removeLiquidity(
+                IUniswapV2Pair(losingLPtoken).token0(),
+                IUniswapV2Pair(losingLPtoken).token1(),
+                amountToRemove,
+                0,
+                0,
+                owner(),
+                block.timestamp + 60*10
+            );
 
-        IUniswapV2Router01(uniswapV2Router).removeLiquidity(
-            IUniswapV2Pair(losingLPtoken).token0(),
-            IUniswapV2Pair(losingLPtoken).token1(),
-            amountToRemove,
-            0,
-            0,
-            address(this),
-            block.timestamp + 60*10
-        );
+        }else{
+            IERC20BettingToken(losingToken).transfer(owner(),amountToRemove);
+        }
 
-        matchData.player1.amountLp = IERC20BettingToken(matchData.player1.lpToken).balanceOf(address(this));
-        matchData.player2.amountLp = IERC20BettingToken(matchData.player2.lpToken).balanceOf(address(this));
-        matchData.status = ENDED;
+        lock.player1.amountLp = IERC20BettingToken(lock.player1.lpToken).balanceOf(address(this));
+        lock.player2.amountLp = IERC20BettingToken(lock.player2.lpToken).balanceOf(address(this));
+        lock.status = ENDED;
 
     }
-//    /**
-//     * @notice announce result
-//   * @param _betId the id of the lock bet
-//   * @param result the match results
-//   */
-//    function announceResult(uint256 _betId, uint256 result,bool removeInitial) external onlyOwner {
-//        SharedStructs.Match storage lock = matches[_betId];
-//
-//        _takeSnapshot(_betId);
-//
-//        lock.matchResult = result;
-//        matches[_betId] = lock;
-//
-//        address winningToken;
-//        address losingLPtoken;
-//        address losingToken;
-//        uint256 initial;
-//        if(lock.matchResult == 1){
-//            winningToken = lock.player1.token;
-//            losingLPtoken = lock.player2.lpToken;
-//            losingToken = lock.player2.token;
-//            initial = lock.player2.initialStableAmount;
-//        }else if(lock.matchResult == 2){
-//            winningToken = lock.player2.token;
-//            losingLPtoken = lock.player1.lpToken;
-//            losingToken = lock.player1.token;
-//            initial = lock.player1.initialStableAmount;
-//        }
-//
-//        IERC20BettingToken(winningToken).unpause();
-//        IERC20BettingToken(losingToken).unpauseExceptSelling();
-//
-//        //remove intial liquidity.
-//        address stableToken = IUniswapV2Pair(losingLPtoken).token1();
-//        if(stableToken == losingToken){
-//            stableToken =  IUniswapV2Pair(losingLPtoken).token0();
-//        }
-//
-//        uint256 totalInPool = IERC20BettingToken(stableToken).balanceOf(losingLPtoken);
-//        uint256 losingLPtokenAmount = IERC20BettingToken(losingLPtoken).balanceOf(address(this));
-//
-//        uint256 initialAmountToRemove = initial.mul(100000).div(totalInPool).mul(losingLPtokenAmount).div(100000);
-//
-//
-//        uint256 feeToAmountToClaim = 0;
-//
-//        if(feePercent > 0){
-//            if(losingLPtokenAmount > initialAmountToRemove){
-//                feeToAmountToClaim = losingLPtokenAmount.sub(initialAmountToRemove).mul(feePercent).div(10000);
-//
-//            }
-//        }
-//
-//
-//        uint256 amountToRemove = initialAmountToRemove.add(feeToAmountToClaim);
-//
-//        if(amountToRemove > losingLPtokenAmount){
-//            amountToRemove = losingLPtokenAmount;
-//        }
-//        if(removeInitial){
-//            IERC20BettingToken(losingLPtoken).approve(address(uniswapV2Router), amountToRemove);
-//
-//            IUniswapV2Router01(uniswapV2Router).removeLiquidity(
-//                IUniswapV2Pair(losingLPtoken).token0(),
-//                IUniswapV2Pair(losingLPtoken).token1(),
-//                amountToRemove,
-//                0,
-//                0,
-//                owner(),
-//                block.timestamp + 60*10
-//            );
-//
-//        }else{
-//            IERC20BettingToken(losingToken).transfer(owner(),amountToRemove);
-//        }
-//
-//        lock.player1.amountLp = IERC20BettingToken(lock.player1.lpToken).balanceOf(address(this));
-//        lock.player2.amountLp = IERC20BettingToken(lock.player2.lpToken).balanceOf(address(this));
-//        lock.status = ENDED;
-//
-//    }
 
     function _takeSnapshot(uint256 _betId) internal{
         SharedStructs.Match memory lock = matches[_betId];

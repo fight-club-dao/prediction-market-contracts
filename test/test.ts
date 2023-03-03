@@ -27,6 +27,7 @@ describe("Test 2", function () {
         UniswapV2Locker = await ethers.getContractFactory('PredictionMarketManager');
         PMHelper = await  ethers.getContractFactory('PMHelper');
 
+
         locker = await UniswapV2Locker.deploy(UNISWAPV2_FACTORY_ADDRESS, UNISWAPV2_ROUTER_ADDRESS,FUNCTIONS_CONSUMER_MUMBAI);
 
         usdc   = await MockToken.deploy("USDC","USDC",locker.address,UNISWAPV2_ROUTER_ADDRESS,USDT_ADDRESS);
