@@ -19,5 +19,6 @@ export const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 export const USDC_MAINNET = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 
 export const FUNCTIONS_CONSUMER_MUMBAI = "0x23a8C72d7f7A5B11A8b9bFbb50BB61550531Be2B";
+export const ORACLE_CHAINLINK = "0xeA6721aC65BCeD841B8ec3fc5fEdeA6141a0aDE4";
 
 // export const oneEther = new BigNumber(Math.pow(10, 18));

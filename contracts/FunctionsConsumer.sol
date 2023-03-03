@@ -141,6 +141,18 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
   }
 
   /**
+   * @notice set Mock Data on chainLink consumer
+   *
+   * @param response the results response from latest match ended
+   * Either response or error parameter will be set, but never both
+   */
+  function setMockData(
+    uint256 response
+  ) external {
+    latestMatchResults = response;
+  }
+
+  /**
    * @notice Allows the Functions oracle address to be updated
    *
    * @param oracle New oracle address

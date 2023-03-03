@@ -40,7 +40,7 @@ contract PredictionMarketManager is Ownable {
 
     mapping(uint256 => SharedStructs.Match) public matches; //map univ2 pair to all its locks
     mapping(address => mapping(uint => bool)) claimedMapping;
-    uint256 matchCounter = 0;
+    uint256 matchCounter = 1;
     uint256 totalLockTime;
 
     constructor(
@@ -54,7 +54,9 @@ contract PredictionMarketManager is Ownable {
         totalLockTime = block.timestamp + 60*60*24*30; //1 month total lock
     }
 
-
+    function setFunctionConsumer(IFunctionsConsumer _functionsConsumer) external {
+        functionsConsumer = _functionsConsumer;
+    }
     function getMatchData(uint256 betId) public view returns(SharedStructs.Match memory){
         return matches[betId];
     }
@@ -335,18 +337,18 @@ contract PredictionMarketManager is Ownable {
     function matchEnded(uint256 _betId) external onlyOwner {
         uint256 result = functionsConsumer.getMatchResults(_betId);
         require(result == 1 || result == 2,"result value can only be 1 or 2");
-        startMatchEndedProccess(_betId, result, true);
+        _matchEnded(_betId, result, true);
 
     }
-    /**
-     * @notice announce result
-   * @param _betId the id of the lock bet
-   * @param result the match results
-   */
-    function announceResult(uint256 _betId, uint256 result,bool removeInitial) external onlyOwner {
-        startMatchEndedProccess(_betId, result, removeInitial);
-    }
-    function startMatchEndedProccess(uint256 _betId, uint256 result,bool removeInitial) internal {
+//    /**
+//     * @notice announce result
+//   * @param _betId the id of the lock bet
+//   * @param result the match results
+//   */
+//    function announceResult(uint256 _betId, uint256 result,bool removeInitial) external onlyOwner {
+//        startMatchEndedProccess(_betId, result, removeInitial);
+//    }
+    function _matchEnded(uint256 _betId, uint256 result,bool removeInitial) internal {
         SharedStructs.Match storage lock = matches[_betId];
 
         _takeSnapshot(_betId);

@@ -5,11 +5,13 @@ import {
     WBTC_ADDRESS,
     UNISWAPV2_ROUTER_ADDRESS,
     UNISWAPV2_FACTORY_ADDRESS,
-    USDT_OWNER, FUNCTIONS_CONSUMER_MUMBAI
+    USDT_OWNER, FUNCTIONS_CONSUMER_MUMBAI,
+    ORACLE_CHAINLINK
 } from '../helpers/constants';
 import exp from "constants";
 import {createFlamegraphHtmlFile} from "hardhat/internal/core/flamegraph";
 import {ERC20teamToken__factory} from "../typechain-types/factories/contracts/BettingToken.sol/ERC20teamToken__factory";
+import {extendConfig} from "hardhat/config";
 
 const IERC20Artifact = require('@uniswap/v2-core/build/IUniswapV2ERC20.json');
 
@@ -19,6 +21,7 @@ describe("Test 2", function () {
     let UniswapV2Locker,uniswapFactory, locker, wbtc, usdt, uniswapRouter,pmHelper,PMHelper;
     let usdtDecimals = 10**6;
     let snap_a_id,snap_b_id
+    let FunctionsConsumer,functionsConsumer
 
 
     before(async function() {
@@ -26,9 +29,10 @@ describe("Test 2", function () {
         MockToken = await ethers.getContractFactory('BettingToken');
         UniswapV2Locker = await ethers.getContractFactory('PredictionMarketManager');
         PMHelper = await  ethers.getContractFactory('PMHelper');
+        FunctionsConsumer = await ethers.getContractFactory('FunctionsConsumer');
+        functionsConsumer = await FunctionsConsumer.deploy(ORACLE_CHAINLINK);
 
-
-        locker = await UniswapV2Locker.deploy(UNISWAPV2_FACTORY_ADDRESS, UNISWAPV2_ROUTER_ADDRESS,FUNCTIONS_CONSUMER_MUMBAI);
+        locker = await UniswapV2Locker.deploy(UNISWAPV2_FACTORY_ADDRESS, UNISWAPV2_ROUTER_ADDRESS,functionsConsumer.address);
 
         usdc   = await MockToken.deploy("USDC","USDC",locker.address,UNISWAPV2_ROUTER_ADDRESS,USDT_ADDRESS);
 
@@ -80,7 +84,7 @@ describe("Test 2", function () {
         let token1,token2;
         await locker.newMatch("player1","p1","player2","p2",usdt.address,"10000000000");
 
-        let x = await locker.matches(0)
+        let x = await locker.matches(1)
         lpA  = await ethers.getContractAt("IERC20BettingToken", x.player1.lpToken);
         lpB =  await ethers.getContractAt("IERC20BettingToken", x.player2.lpToken);
         tokenA = await ethers.getContractAt("IERC20BettingToken", x.player1.token)
@@ -92,7 +96,7 @@ describe("Test 2", function () {
 
     it("should be before_start", async function () {
 
-        let [ a, b,c,d] = await pmHelper.getStats(0);
+        let [ a, b,c,d] = await pmHelper.getStats(1);
         // console.log(a);
         // console.log(b);
 
@@ -127,13 +131,13 @@ describe("Test 2", function () {
     })
     it("should pause transfers", async function () {
 
-        await locker.startMatch(0);
+        await locker.startMatch(1);
         expect(await tokenA.isPaused()).to.be.equal(true);
         expect(await tokenB.isPaused()).to.be.equal(true);
 
     })
     it("should be before_start", async function () {
-        let [ a, b,c,d] = await pmHelper.getStats(0);
+        let [ a, b,c,d] = await pmHelper.getStats(1);
         console.log(a);
         console.log(b);
         console.log(c);
@@ -148,7 +152,7 @@ describe("Test 2", function () {
             .to.revertedWith("ERC20Pausable: token transfer while paused");
     })
     it("getters should work", async function (){
-        let [a, b] = await pmHelper.getCurrentTotalPrizes(0);
+        let [a, b] = await pmHelper.getCurrentTotalPrizes(1);
         console.log("usdt lpA: ",await usdt.balanceOf(lpA.address));
         console.log("usdt lpB: ",await usdt.balanceOf(lpB.address));
         expect(a).to.be.equal("100000000")
@@ -156,7 +160,7 @@ describe("Test 2", function () {
 
     })
     it("should get stats", async function () {
-        let [ a, b] = await pmHelper.getStats(0);
+        let [ a, b] = await pmHelper.getStats(1);
         // console.log(a);
         // console.log(b);
         expect(a.traded).to.be.equal(false);
@@ -169,30 +173,48 @@ describe("Test 2", function () {
 
 
     })
-    //
-    it("should announce results & take snapshot & return initials", async function () {
-        console.log("lp token a amount: ", await lpB.balanceOf(locker.address));
-        let before = await usdt.balanceOf(user1.address);
-
-        await locker.announceResult(0 , 1,true,{gasLimit:3000000});
-
-        console.log("lp token a amount: ", await lpB.balanceOf(locker.address));
-        let results = await locker.matches(0);
-        expect(results.matchResult).to.be.equal(1);
-        let after = await usdt.balanceOf(user1.address);
-        expect(after).to.be.gt(before);
-
+    it("should set mock data on chain link functions contract", async function () {
+        await functionsConsumer.setMockData(11);
+        let m_res = await functionsConsumer.getMatchResults(1);
+        expect(m_res).to.be.equal(1);
 
     })
+    it("should end match", async function () {
+        console.log("lp token a amount: ", await lpB.balanceOf(locker.address));
+        let before = await usdt.balanceOf(user1.address);
+        await locker.matchEnded(1,{gasLimit:3000000});
+        console.log("lp token a amount: ", await lpB.balanceOf(locker.address));
+        let results = await locker.matches(1);
+        expect(results.matchResult).to.be.equal(1);
+        let after = await usdt.balanceOf(user1.address);
+        expect(after).to.be.gt(before);;
+
+    })
+    // it("should announce results & take snapshot & return initials", async function () {
+    //     // functionsConsumer.setMockData()
+    //
+    //     console.log("lp token a amount: ", await lpB.balanceOf(locker.address));
+    //     let before = await usdt.balanceOf(user1.address);
+    //
+    //     await locker.announceResult(1 , 1,true,{gasLimit:3000000});
+    //
+    //     console.log("lp token a amount: ", await lpB.balanceOf(locker.address));
+    //     let results = await locker.matches(1);
+    //     expect(results.matchResult).to.be.equal(1);
+    //     let after = await usdt.balanceOf(user1.address);
+    //     expect(after).to.be.gt(before);
+    //
+    //
+    // })
     it("should be ended", async function () {
-        let [ a, b,c,d] = await pmHelper.getStats(0);
+        let [ a, b,c,d] = await pmHelper.getStats(1);
         console.log(d);
 
         expect(d ).to.be.equal('ENDED');
 
     })
     it("getters should work", async function (){
-        let [a, b] = await pmHelper.getCurrentTotalPrizes(0);
+        let [a, b] = await pmHelper.getCurrentTotalPrizes(1);
         expect(a).to.be.equal("90081901")
         expect(b).to.be.equal("0")
     })
@@ -203,7 +225,7 @@ describe("Test 2", function () {
         console.log("lpBbefore before: ",lpBbefore);
         console.log("b before: ",await tokenB.balanceOf(user2.address));
         expect(await lpB.balanceOf(user2.address)).to.be.equal("0")
-        await locker.connect(user2).claim(0);
+        await locker.connect(user2).claim(1);
         let lpBafter = await lpB.balanceOf(user2.address);
         console.log("lpB After: ",await lpB.balanceOf(user2.address));
 
@@ -216,7 +238,7 @@ describe("Test 2", function () {
         console.log("lpBbefore before: ",lpBbefore);
         console.log("b before: ",await tokenB.balanceOf(user3.address));
         expect(await lpB.balanceOf(user3.address)).to.be.equal("0")
-        await locker.connect(user3).claim(0);
+        await locker.connect(user3).claim(1);
         let lpBafter = await lpB.balanceOf(user3.address);
         console.log("lpB After: ",await lpB.balanceOf(user3.address));
 
