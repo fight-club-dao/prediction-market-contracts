@@ -56,7 +56,7 @@ contract FundManager is Ownable {
     function returnFunds(uint256 _amount) external {
         require(msg.sender == predictionMarket, "only prediction market can return funds");
         ERC20(fundsToken).transferFrom(msg.sender, address(this),_amount);
-        function paybackLoan(uint256 _amount);
+        paybackLoan(_amount);
     }
 
 
