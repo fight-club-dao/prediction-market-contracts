@@ -12,11 +12,6 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-interface IUSDTERC20 {
-    function transfer(address spender, uint256 amount) external;
-    function transferFrom(address from, address to, uint256 amount) external;
-}
-
 contract FundManager is Ownable {
     using SafeMath for uint256;
 
@@ -38,12 +33,12 @@ contract FundManager is Ownable {
     function borrowFunds(uint256 _amount) external {
         require(msg.sender == predictionMarket, "only prediction market can request funds");
         require(_amount <= ERC20(fundsToken).balanceOf(address(this)), "not enough funds");
-        IUSDTERC20(fundsToken).transfer(msg.sender, _amount);
+        ERC20(fundsToken).transfer(msg.sender, _amount);
     }
 
     function returnFunds(uint256 _amount) external {
         require(msg.sender == predictionMarket, "only prediction market can return funds");
-        IUSDTERC20(fundsToken).transferFrom(msg.sender, address(this),_amount);
+        ERC20(fundsToken).transferFrom(msg.sender, address(this),_amount);
     }
 
 
