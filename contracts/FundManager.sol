@@ -41,8 +41,12 @@ contract FundManager is Ownable {
 
     function borrowHumaFunds(uint256 _amount) {
         require(msg.sender == predictionMarket, "only prediction market can request funds");
-        require(_amount <= ERC20(fundsToken).balanceOf(address(this)), "not enough funds");
         baseCreditPool.drawdown(_amount);
+    }
+
+    function returnHumaFunds(uint256 _amount) {
+        require(msg.sender == predictionMarket, "only prediction market can request funds");
+        baseCreditPool.makePayment(_amount);
     }
 
     function returnFunds(uint256 _amount) external {
