@@ -25,7 +25,7 @@ async function main() {
 
     const consumerContract = await ethers.getContractFactory(contractName)
 
-    const deployedContract = await consumerContract.deploy(USDC_ADDRESS)
+    const deployedContract = await consumerContract.deploy(USDC_ADDRESS, "0xE42C3ac195DE958B38c323DD14a47894AB7c422c")
 
     console.log("Deployed address:", deployedContract.address)
 }

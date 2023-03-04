@@ -5,10 +5,12 @@
 //},
 
 {
-  "PredictionMarketManager":"",
+  "PredictionMarketManager":"0xC787ce03a09fe243492b34A895b9190669450c5c",
   "PredictionMarketHelper":"",
   "FunctionConsumer": "0xaE4419B48Ec064f85BC24BDfA822C3868Cf8334c",
   "FundManager": "0x7F07648363865301e4f4C83dcB09eD894F1A4A2D",
 
 
 }
+
+FC = "0x6Ae7b0A6cB5a46a3c7847fF474a4Ddab56b7b04F"
