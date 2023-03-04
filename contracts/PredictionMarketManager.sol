@@ -5,17 +5,17 @@
 pragma solidity 0.8.17;
 pragma experimental ABIEncoderV2;
 
-//import "./TransferHelper.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-//import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./interfaces/IERC20BettingToken.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IFunctionsConsumer.sol";
 import "./interfaces/IUSDT.sol";
 import "./libraries/SharedStructs.sol";
+import "./interfaces/IFundManager.sol";
 import "./BettingToken.sol";
+import "hardhat/console.sol";
 
 interface IUniFactory {
     function getPair(address tokenA, address tokenB) external view returns (address);
@@ -31,6 +31,7 @@ contract PredictionMarketManager is Ownable {
     IUniFactory public uniswapFactory;
     IUniswapV2Router01 public uniswapV2Router;
     IFunctionsConsumer public functionsConsumer;
+    IFundManager public fundManager;
 
     string constant BEFORE_START="BEFORE_START";
     string constant ON_GOING="ON_GOING";
@@ -40,17 +41,19 @@ contract PredictionMarketManager is Ownable {
 
     mapping(uint256 => SharedStructs.Match) public matches; //map univ2 pair to all its locks
     mapping(address => mapping(uint => bool)) claimedMapping;
-    uint256 matchCounter = 1;
+    uint256 public matchCounter = 1;
     uint256 totalLockTime;
 
     constructor(
         IUniFactory _uniswapFactory,
         IUniswapV2Router01 _uniswapV2Router,
-        IFunctionsConsumer _functionsConsumer
+        IFunctionsConsumer _functionsConsumer,
+        IFundManager _fundManager
     ) public {
         uniswapFactory = _uniswapFactory;
         uniswapV2Router = _uniswapV2Router;
         functionsConsumer = _functionsConsumer;
+        fundManager = _fundManager;
         totalLockTime = block.timestamp + 60*60*24*30; //1 month total lock
     }
 
@@ -70,7 +73,7 @@ contract PredictionMarketManager is Ownable {
 
         matchData.player1 = createPlayerStuct(pair1, address(token1),initial_stable_amount);
         matchData.player2 = createPlayerStuct(pair2, address(token2),initial_stable_amount);
-        matchData.lockID = matchCounter;
+        matchData.matchID = matchCounter;
         matchData.matchResult = 0;
         matchData.status = BEFORE_START;
         matches[matchCounter] = matchData;
@@ -102,6 +105,12 @@ contract PredictionMarketManager is Ownable {
         return(token, pair);
 
     }
+    function _getFunds(address stable_token, uint256  _amount) internal {
+        console.log("here3e");
+        fundManager.borrowFunds(_amount);
+        console.log("here3e");
+        require(IERC20(stable_token).balanceOf(address(this)) >= _amount, "not enough funds");
+    }
     function newMatch(
         string memory token1_name,
         string memory token1_symbol,
@@ -111,10 +120,12 @@ contract PredictionMarketManager is Ownable {
         uint256 initial_stable_amount
     ) external returns (uint256){ //todo add modifier
         //Take loan here
-        require(IERC20(stable_token).balanceOf(address(this)) >= initial_stable_amount.mul(2), "not enough funds. take a loan");
+
 
         IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
-
+        console.log("here3e");
+        _getFunds(stable_token, initial_stable_amount.mul(2));
+        console.log("here3e");
         (BettingToken token1 ,address pair1)= _deployTokenAndAddLiquidity(token1_name, token1_symbol, stable_token, initial_stable_amount);
         (BettingToken token2 ,address pair2)= _deployTokenAndAddLiquidity(token2_name, token2_symbol, stable_token, initial_stable_amount);
 
@@ -405,15 +416,26 @@ contract PredictionMarketManager is Ownable {
         if(removeInitial){
             IERC20BettingToken(losingLPtoken).approve(address(uniswapV2Router), amountToRemove);
 
-            IUniswapV2Router01(uniswapV2Router).removeLiquidity(
+            (uint256 amount0, uint256 amount1) = IUniswapV2Router01(uniswapV2Router).removeLiquidity(
                 IUniswapV2Pair(losingLPtoken).token0(),
                 IUniswapV2Pair(losingLPtoken).token1(),
                 amountToRemove,
                 0,
                 0,
-                owner(),
+                address(this),
                 block.timestamp + 60*10
             );
+
+            uint256 removedAmount;
+            if(IUniswapV2Pair(losingLPtoken).token0() == stableToken){
+                removedAmount = amount0;
+            }else{
+                removedAmount = amount1;
+            }
+
+            //return funds to fundManager
+            IUSDTapprover(stableToken).approve(address(fundManager), removedAmount);
+            fundManager.returnFunds(removedAmount);
 
         }else{
             IERC20BettingToken(losingToken).transfer(owner(),amountToRemove);

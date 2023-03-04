@@ -6,7 +6,7 @@ library SharedStructs {
         Player player1;
         Player player2;
         string status;
-        uint256 lockID; // lockID nonce per uni pair
+        uint256 matchID; // lockID nonce per uni pair
         address owner;
         uint256 matchResult;
     }
