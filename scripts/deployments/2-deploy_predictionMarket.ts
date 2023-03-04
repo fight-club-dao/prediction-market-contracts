@@ -1,10 +1,7 @@
 import {
-    USDT_ADDRESS,
-    WBTC_ADDRESS,
     UNISWAPV2_ROUTER_ADDRESS,
     UNISWAPV2_FACTORY_ADDRESS,
-    USDT_OWNER, FUNCTIONS_CONSUMER_MUMBAI
-} from '../../helpers/constants';
+} from '../../helpers/constants-goerli';
 
 import {ethers} from "hardhat";
 const fs = require('fs')
@@ -12,11 +9,12 @@ const path = require('path')
 // import fs from "fs";
 // import path from "path";
 
-const FunctionsConsumer = "0xb71c52BA5E0690A7cE3A0214391F4c03F5cbFB0d"
+const FunctionsConsumer = "0xaE4419B48Ec064f85BC24BDfA822C3868Cf8334c"
+const FundManager = "0x7F07648363865301e4f4C83dcB09eD894F1A4A2D"
 async function main() {
 
     let PMMANGER = await ethers.getContractFactory('PredictionMarketManager');
-    let pmManager = await PMMANGER.deploy(UNISWAPV2_FACTORY_ADDRESS, UNISWAPV2_ROUTER_ADDRESS, FunctionsConsumer);
+    let pmManager = await PMMANGER.deploy(UNISWAPV2_FACTORY_ADDRESS, UNISWAPV2_ROUTER_ADDRESS, FunctionsConsumer,FundManager);
     await pmManager.deployed();
     console.log("pmManager deployed to: ",pmManager.address);
 

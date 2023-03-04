@@ -10,9 +10,7 @@ async function main() {
     // The oracle address on Polygon Mumbai
     // See https://docs.chain.link/chainlink-functions/supported-networks
     // for a list of supported networks and addresses.
-    let oracle_sepolia;
-    let oracle_mumbai = 	"0xeA6721aC65BCeD841B8ec3fc5fEdeA6141a0aDE4";
-    const oracleAddress = oracle_mumbai
+    const oracleAddress = "0xeA6721aC65BCeD841B8ec3fc5fEdeA6141a0aDE4"
 
     // Set your contract name.
     const contractName = "FunctionsConsumer"

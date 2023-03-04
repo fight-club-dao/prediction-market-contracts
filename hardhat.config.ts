@@ -90,7 +90,7 @@ const config: HardhatUserConfig = {
       url: 'https://eth-goerli.g.alchemy.com/v2/SCDgqVqpOzP_2_2Oj-C8jhug9Gw8FGnn',
       accounts: [process.env.PK || PK],
       chainId: 5,
-      gasPrice: 7000000000,
+      gasPrice: 13000000000,
       // timeout: 50000,
 
     },

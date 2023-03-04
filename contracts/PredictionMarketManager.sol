@@ -15,15 +15,12 @@ import "./interfaces/IUSDT.sol";
 import "./libraries/SharedStructs.sol";
 import "./interfaces/IFundManager.sol";
 import "./BettingToken.sol";
-import "hardhat/console.sol";
+
 
 interface IUniFactory {
     function getPair(address tokenA, address tokenB) external view returns (address);
 }
 
-interface IUSDTapprover {
-    function approve(address spender, uint256 amount) external;
-}
 
 contract PredictionMarketManager is Ownable {
     using SafeMath for uint256;
@@ -106,9 +103,9 @@ contract PredictionMarketManager is Ownable {
 
     }
     function _getFunds(address stable_token, uint256  _amount) internal {
-        console.log("here3e");
+
         fundManager.borrowFunds(_amount);
-        console.log("here3e");
+
         require(IERC20(stable_token).balanceOf(address(this)) >= _amount, "not enough funds");
     }
     function newMatch(
@@ -122,10 +119,10 @@ contract PredictionMarketManager is Ownable {
         //Take loan here
 
 
-        IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
-        console.log("here3e");
+        IERC20(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
+
         _getFunds(stable_token, initial_stable_amount.mul(2));
-        console.log("here3e");
+
         (BettingToken token1 ,address pair1)= _deployTokenAndAddLiquidity(token1_name, token1_symbol, stable_token, initial_stable_amount);
         (BettingToken token2 ,address pair2)= _deployTokenAndAddLiquidity(token2_name, token2_symbol, stable_token, initial_stable_amount);
 
@@ -143,7 +140,7 @@ contract PredictionMarketManager is Ownable {
         //Take loan here
         require(IERC20(stable_token).balanceOf(address(this)) >= initial_stable_amount.mul(2), "not enough funds. take a loan");
 
-        IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
+        IERC20(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
 
         (BettingToken token2 ,address pair2)= _deployTokenAndAddLiquidity(token2_name, token2_symbol, stable_token, initial_stable_amount);
 
@@ -161,7 +158,7 @@ contract PredictionMarketManager is Ownable {
         //Take loan here
         require(IERC20(stable_token).balanceOf(address(this)) >= initial_stable_amount.mul(2), "not enough funds. take a loan");
 
-        IUSDTapprover(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
+        IERC20(stable_token).approve(address(uniswapV2Router), initial_stable_amount.mul(2));
 
         return _newMatch(address(token1), pair1, address(token2), pair2, initial_stable_amount);
     }
@@ -434,7 +431,7 @@ contract PredictionMarketManager is Ownable {
             }
 
             //return funds to fundManager
-            IUSDTapprover(stableToken).approve(address(fundManager), removedAmount);
+            IERC20(stableToken).approve(address(fundManager), removedAmount);
             fundManager.returnFunds(removedAmount);
 
         }else{

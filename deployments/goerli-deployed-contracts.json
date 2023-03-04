@@ -1,5 +1,14 @@
+//{
+//  "USDC":"0x01881254A8103Cb99618434C495806971ec9A4e7",
+//  "PredictionMarketManager":"0xB5478784f4f59F6EA54B046D0780859F994fbEfE",
+//  "PredictionMarketHelper":"0x249024660B3bB5D24e65aaeA66edea6A81a1E2CB"
+//},
+
 {
-  "USDC":"0x01881254A8103Cb99618434C495806971ec9A4e7",
-  "PredictionMarketManager":"0xB5478784f4f59F6EA54B046D0780859F994fbEfE",
-  "PredictionMarketHelper":"0x249024660B3bB5D24e65aaeA66edea6A81a1E2CB"
+  "PredictionMarketManager":"",
+  "PredictionMarketHelper":"",
+  "FunctionConsumer": "0xaE4419B48Ec064f85BC24BDfA822C3868Cf8334c",
+  "FundManager": "0x7F07648363865301e4f4C83dcB09eD894F1A4A2D",
+
+
 }
