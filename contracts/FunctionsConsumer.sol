@@ -47,7 +47,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
    */
   function requestMatchResults(
     string[] calldata args
-  ) public returns (bytes32) { //todo add only pmManager
+  ) public returns (bytes32) {
     Functions.Request memory req;
     req.initializeRequest(Functions.Location.Inline, Functions.CodeLanguage.JavaScript, s_source);
     if (s_secrets.length > 0) {
@@ -148,7 +148,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
    */
   function setMockData(
     uint256 response
-  ) external {
+  ) external onlyOwner {
     latestMatchResults = response;
   }
 
