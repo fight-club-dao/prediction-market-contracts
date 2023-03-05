@@ -61,4 +61,3 @@ Deployed contract addresses are in `deployments/scroll-deployed-contracts.json`.
 Fight Club
 Amitay Bohadana
 amitaybohadana@gmail.com
-- Twitter: [@0xBudi]
