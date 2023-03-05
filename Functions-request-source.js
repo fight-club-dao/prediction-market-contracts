@@ -6,12 +6,12 @@
 // Refer to https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code
 
 // Arguments can be provided when a request is initated on-chain and used in the request source code as shown below
-const fromSymbol = args[0]
-const toSymbol = args[1]
+const match_id = args[0]
+
 
 // make HTTP request
-const url = `https://min-api.cryptocompare.com/data/pricemultifull`
-console.log(`HTTP GET Request to ${url}?fsyms=${fromSymbol}&tsyms=${toSymbol}`)
+const url = `https://63fc3c24677c4158730809bf.mockapi.io/api/v1/results`
+console.log(`HTTP GET Request to ${url}?id=${match_id}`)
 
 // construct the HTTP Request object. See: https://github.com/smartcontractkit/functions-hardhat-starter-kit#javascript-code
 // params used for URL query parameters
@@ -19,8 +19,7 @@ console.log(`HTTP GET Request to ${url}?fsyms=${fromSymbol}&tsyms=${toSymbol}`)
 const cryptoCompareRequest = Functions.makeHttpRequest({
   url: url,
   params: {
-    fsyms: fromSymbol,
-    tsyms: toSymbol,
+    id: match_id
   },
 })
 
@@ -38,9 +37,11 @@ if (data.Response === "Error") {
 }
 
 // extract the price
-const price = data["RAW"][fromSymbol][toSymbol]["PRICE"]
-console.log(`${fromSymbol} price is: ${price.toFixed(2)} ${toSymbol}`)
+console.log("data: ",data);
+const results = data[0]["results"]
+const ret_val = match_id *10 + results;
+console.log(`${match_id} price is: ${ret_val}`)
 
 // Solidity doesn't support decimals so multiply by 100 and round to the nearest integer
 // Use Functions.encodeUint256 to encode an unsigned integer to a Buffer
-return Functions.encodeUint256(Math.round(price * 100))
+return Functions.encodeUint256(ret_val)

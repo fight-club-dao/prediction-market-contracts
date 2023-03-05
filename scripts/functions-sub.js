@@ -3,21 +3,25 @@ async function main() {
     const linkAmount = "1"
     // Set your consumer contract address. This contract will
     // be added as an approved consumer of the subscription.
-    const consumer = "0xA055b28dFF4afda3098664C7576DA81a39701437"
+    const consumer = "0x818C7EE5CDA5092B0f65198ddCaeeF53A686DF58"
 
     // Network specific configs
     // Polygon Mumbai LINK 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
     // See https://docs.chain.link/resources/link-token-contracts
     // to find the LINK token contract address for your network.
-    const linkTokenAddress = "0x326C977E6efc84E512bB9C30f76E30c160eD06FB"
-    const functionsBillingRegistryProxy = "0xEe9Bf52E5Ea228404bB54BCFbbDa8c21131b9039" //todo: need to change this also
+    let linkTokenAddressSepolia ="0x779877A7B0D9E8603169DdbD7836e478b4624789";
+    let linkTokenAddressMumbai ="0x326C977E6efc84E512bB9C30f76E30c160eD06FB";
+    let functionsBillingRegistryProxySepolia = "0x3c79f56407DCB9dc9b852D139a317246f43750Cc";
+    let functionsBillingRegistryProxyMumbai = "0xEe9Bf52E5Ea228404bB54BCFbbDa8c21131b9039";
+    const linkTokenAddress = linkTokenAddressSepolia
+    const functionsBillingRegistryProxy = functionsBillingRegistryProxySepolia //todo: need to change this also
 
     const RegistryFactory = await ethers.getContractFactory(
         "contracts/dev/functions/FunctionsBillingRegistry.sol:FunctionsBillingRegistry"
     )
     const registry = await RegistryFactory.attach(functionsBillingRegistryProxy)
 
-    const createSubscriptionTx = await registry.createSubscription()
+    const createSubscriptionTx = await registry.createSubscription({gasLimit: 3000000})
 
     const createSubscriptionReceipt = await createSubscriptionTx.wait(1)
 

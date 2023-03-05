@@ -31,7 +31,7 @@ async function main() {
     const signer = new ethers.Wallet(signerPrivateKey, provider)
 
     // Consumer contract
-    const consumerAddress = '0x27061b613A56c1a59b138e52186D5f5Cd78d438a'
+    const consumerAddress = '0x818C7EE5CDA5092B0f65198ddCaeeF53A686DF58'
     const consumerAbiPath = './artifacts/contracts/FunctionsConsumer.sol/FunctionsConsumer.json'
     const contractAbi = JSON.parse(await fs.readFile(consumerAbiPath, 'utf8')).abi
     const consumerContract = new ethers.Contract(consumerAddress, contractAbi, signer)
@@ -42,7 +42,7 @@ async function main() {
 
     // Chainlink Functions request config
     // Chainlink Functions subscription ID
-    const subscriptionId = 55
+    const subscriptionId = 60
     // Gas limit for the Chainlink Functions request
     const requestGas = 5500000
 
@@ -65,7 +65,9 @@ async function main() {
 
     // Create an oracle contract object.
     // Used in this script only to encrypt secrets.
-    const oracleAddress = '0x649a2C205BE7A3d5e99206CEEFF30c794f0E31EC' // Polygon Mumbai
+    let oracleAddressSepolia = "0x649a2C205BE7A3d5e99206CEEFF30c794f0E31EC"
+    let oracleAddressMumbai = "0xeA6721aC65BCeD841B8ec3fc5fEdeA6141a0aDE4"
+    const oracleAddress = oracleAddressSepolia
     const oracleAbiPath = './artifacts/contracts/dev/functions/FunctionsOracle.sol/FunctionsOracle.json'
     const oracleAbi = JSON.parse(await fs.readFile(oracleAbiPath, 'utf8')).abi
     const oracle = new ethers.Contract(oracleAddress, oracleAbi, signer)
