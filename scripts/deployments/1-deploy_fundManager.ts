@@ -5,7 +5,8 @@ const path = require('path')
 // import fs from "fs";
 // import path from "path";
 import {
-    CIRCLE_TOKEN_MESSANGER,
+    CIRCLE_MESSAGE_TRANSMITTER,
+    CIRCLE_TOKEN_MESSANGER, HUMA_CREDIT_POOL,
     USDC_ADDRESS,
 } from '../../helpers/constants-goerli';
 
@@ -24,9 +25,11 @@ async function main() {
 
     console.log("Account balance:", (await deployer.getBalance()).toString())
 
+
+
     const consumerContract = await ethers.getContractFactory(contractName)
 
-    const deployedContract = await consumerContract.deploy(USDC_ADDRESS, "0xE42C3ac195DE958B38c323DD14a47894AB7c422c", CIRCLE_TOKEN_MESSANGER)
+    const deployedContract = await consumerContract.deploy("0x23a8C72d7f7A5B11A8b9bFbb50BB61550531Be2B", HUMA_CREDIT_POOL , CIRCLE_TOKEN_MESSANGER, CIRCLE_MESSAGE_TRANSMITTER, "0x23a8C72d7f7A5B11A8b9bFbb50BB61550531Be2B", true)
 
     console.log("Deployed address:", deployedContract.address)
 }

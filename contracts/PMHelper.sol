@@ -10,8 +10,9 @@ import "./libraries/SharedStructs.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IERC20BettingToken.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PMHelper {
+contract PMHelper is Ownable {
     using SafeMath for uint256;
 
     IPredictionMarketManager pmManager;
@@ -21,6 +22,9 @@ contract PMHelper {
 
     }
 
+    function setPredictionMarketManager(IPredictionMarketManager _predictionMarketManager) external onlyOwner{
+        pmManager = _predictionMarketManager;
+    }
     /**
        * @notice get the current total prize for each team
    * @param _betId the id of the lock bet

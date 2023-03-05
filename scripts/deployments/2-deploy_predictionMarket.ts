@@ -9,8 +9,8 @@ const path = require('path')
 // import fs from "fs";
 // import path from "path";
 
-const FunctionsConsumer = "0xaE4419B48Ec064f85BC24BDfA822C3868Cf8334c"
-const FundManager = "0x7F07648363865301e4f4C83dcB09eD894F1A4A2D"
+const FunctionsConsumer = "0x10f86aedcFA3e5bc006E8775d17B3aC38781643e"
+const FundManager = "0xA574f7815517E0487ab7cAe93455d9e8173a99d4"
 async function main() {
 
     let PMMANGER = await ethers.getContractFactory('PredictionMarketManager');

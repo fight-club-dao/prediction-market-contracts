@@ -1,0 +1,8 @@
+{
+  "PredictionMarketHelper": "0xd3E73966cD6f2BbF769bdacc0066245f86C6967a",
+  "PredictionMarketManager": "0x246aaFB2Fe5B3Cc9009a2097e5e6D9649f3176ba",
+  "FunctionConsumer": "0x10f86aedcFA3e5bc006E8775d17B3aC38781643e",
+  "FundManager": "0xA574f7815517E0487ab7cAe93455d9e8173a99d4",
+  "MockUSDC" : "0x23a8C72d7f7A5B11A8b9bFbb50BB61550531Be2B"
+
+}

@@ -54,9 +54,18 @@ contract PredictionMarketManager is Ownable {
         totalLockTime = block.timestamp + 60*60*24*90; //3 month total lock
     }
 
-    function setFunctionConsumer(IFunctionsConsumer _functionsConsumer) external {
+    function setContractAddresses(
+        IUniFactory _uniswapFactory,
+        IUniswapV2Router01 _uniswapV2Router,
+        IFunctionsConsumer _functionsConsumer,
+        IFundManager _fundManager
+    ) external onlyOwner {
+        uniswapFactory = _uniswapFactory;
+        uniswapV2Router = _uniswapV2Router;
         functionsConsumer = _functionsConsumer;
+        fundManager = _fundManager;
     }
+
     function getMatchData(uint256 betId) public view returns(SharedStructs.Match memory){
         return matches[betId];
     }

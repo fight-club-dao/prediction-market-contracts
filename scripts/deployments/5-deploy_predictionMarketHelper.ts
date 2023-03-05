@@ -12,11 +12,11 @@ const path = require('path')
 // import fs from "fs";
 // import path from "path";
 
-const PredictionMarketManager = "0xb71c52BA5E0690A7cE3A0214391F4c03F5cbFB0d"
+const PredictionMarketManager = "0x246aaFB2Fe5B3Cc9009a2097e5e6D9649f3176ba"
 async function main() {
 
     let CONTRACT = await ethers.getContractFactory('PMHelper');
-    let contract = await CONTRACT.deploy("PredictionMarketManager");
+    let contract = await CONTRACT.deploy(PredictionMarketManager);
     await contract.deployed();
     console.log("contract deployed to: ",contract.address);
 

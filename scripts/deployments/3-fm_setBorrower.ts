@@ -16,8 +16,8 @@ async function main() {
     // Set your contract name.
     const contractName = "FundManager"
     //const contractName = "MyFirstContract"
-    let fm_address = "0x7F07648363865301e4f4C83dcB09eD894F1A4A2D"
-    let predictionMarketAddress = "";
+    let fm_address = "0xa88416816f81144Dc5fC78d39ab4FD1C07114263"
+    let predictionMarketAddress = "0xDF11378E7f5708Bab56c8925E086096Fa54E378C";
     const [deployer] = await ethers.getSigners()
 
     let fm = await ethers.getContractAt('FundManager',fm_address);

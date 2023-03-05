@@ -82,7 +82,8 @@ const config: HardhatUserConfig = {
       gasPrice: 18000000000
     },
     scroll: {
-      url: "https://scroll-prealpha.unifra.io/v1/df6399363f0a4f0ba72fd950e365e7a6" ?? "UNSET",
+      url: "https://alpha-rpc.scroll.io/l2",
+    gasPrice: 10000000,
       accounts: [process.env.PK || PK],
     },
     goerli: {

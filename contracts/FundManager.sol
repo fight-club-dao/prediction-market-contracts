@@ -47,6 +47,11 @@ contract FundManager is Ownable {
     function addFundManagerToMapping(uint256 _chainId, address fundManager) external{
     chainToFundManager[_chainId] = fundManager;
     }
+
+    function setIsMainChain(bool _isMainChain) external onlyOwner() {
+        isMainChain = _isMainChain;
+    }
+
     function setToken(address _fundsToken) external onlyOwner() {
         fundsToken = _fundsToken;
     }
