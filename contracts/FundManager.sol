@@ -27,6 +27,7 @@ contract FundManager is Ownable {
     mapping(uint256 => address) chainToFundManager;
     bool isMainChain = false;
     address usdc;
+
     constructor(
         address _fundsToken,
         IHumaPool _humaPool,
@@ -58,7 +59,7 @@ contract FundManager is Ownable {
         humaPool = _humaPool;
     }
 
-    function drawDownFunds(uint256 _amount) public {
+    function drawDownFunds(uint256 _amount) internal {
         humaPool.drawdown(_amount);
     }
 
